@@ -281,6 +281,14 @@ runs:
           echo "Running yarn lint"
           yarn run lint
         fi
+        # Validate licenses of all NPM dependencies are allowed
+        echo "Checking licenses of all dependencies"
+        # The following NPM package report as UNKNOWN or UNLICENSED, though have been manually checked they have permissive licenses:
+        EXCLUDE_PACKAGES='glob-to-regexp@0.3.0;jquery.are-you-sure@1.9.0;@silverstripe/react-injector@0.2.1;cwp-watea-theme@4.0.0;cwp-starter-theme@4.0.0'
+        npm install -g license-checker
+        SPDX_ALLOWED_DELIMITED=$(cat ${{ github.action_path }}/allowed-spdx-delimited.txt | tr -d '\n')
+        license-checker --production --unknown --out /dev/null --onlyAllow "$SPDX_ALLOWED_DELIMITED" --excludePackages "$EXCLUDE_PACKAGES"
+        # If we get to this point, everything was successful
         echo "Passed"
 
     - name: "Run PHP linting"
